@@ -1,0 +1,10 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "lambda-clj"
+resolve_s3 = true
+s3_prefix = "lambda-clj"
+region = "eu-central-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
