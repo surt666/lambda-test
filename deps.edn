@@ -1,6 +1,9 @@
 {:paths ["src" "resources"]
  :deps {com.amazonaws/aws-lambda-java-core {:mvn/version "1.2.3"}
         com.amazonaws/aws-xray-recorder-sdk-slf4j {:mvn/version "2.18.2"}
+        com.cognitect.aws/api {:mvn/version "0.8.774"}
+        com.cognitect.aws/endpoints {:mvn/version "871.2.40.9"}
+        com.cognitect.aws/dynamodb {:mvn/version "871.2.39.3"}
         com.paulbutcher/ring-lambda-adapter {:mvn/version "1.0.7"}
         compojure/compojure {:mvn/version "1.7.1"}
         hiccup/hiccup {:mvn/version "2.0.0-RC4"}

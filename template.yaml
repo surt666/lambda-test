@@ -5,7 +5,7 @@ Resources:
   Function:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: target/net.clojars.surt666/lambda-test-0.1.0-SNAPSHOT.jar 
+      CodeUri: target/lambda.zip 
       Handler: surt666.lambda::handleRequest
       Runtime: java21
       FunctionUrlConfig:
@@ -16,6 +16,9 @@ Resources:
       Timeout: 20
       MemorySize: 512
       Tracing: Active
+      Environment:
+        Variables:
+          JVM_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 
     Metadata:
       SkipBuild: true
 

@@ -24,10 +24,12 @@
          :basis (b/create-basis {})
          :class-dir class-dir
          :src-dirs ["src"]
-         :ns-compile [main]))
+         :ns-compile ['surt666.lambda 'surt666.lambda-app]
+         :java-opts ["-Dclojure.compiler.direct-linking=true"
+                     "-Dclojure.compiler.elide-meta=[:doc :file :line :added]"
+                     "-server"]))
 
-(defn ci "Run the CI pipeline of tests (and build the uberjar)." [opts]
-  (test opts)
+(defn uber "Build the uberjar without running tests." [opts]
   (b/delete {:path "target"})
   (let [opts (uber-opts opts)]
     (println "\nCopying source...")
@@ -37,3 +39,7 @@
     (println "\nBuilding JAR..." (:uber-file opts))
     (b/uber opts))
   opts)
+
+(defn ci "Run the CI pipeline of tests (and build the uberjar)." [opts]
+  (test opts)
+  (uber opts))
