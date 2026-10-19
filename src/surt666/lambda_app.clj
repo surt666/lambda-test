@@ -1,7 +1,6 @@
 (ns surt666.lambda-app
-  (:require [compojure.core :refer [defroutes GET]]
-            [compojure.route :as route]
-            [hiccup2.core :refer [html]]
+  (:require [hiccup2.core :refer [html]]
+            [reitit.ring :as ring]
             [ring.logger :refer [wrap-with-logger]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.params :refer [wrap-params]]))
@@ -16,14 +15,22 @@
 (def greet-html
   (str (html [:div "Hello, World!"])))
 
-(defn index-page [] index-html)
+(defn- html-response [body]
+  {:status 200
+   :headers {"Content-Type" "text/html; charset=utf-8"}
+   :body body})
 
-(defn greet [] greet-html)
+(defn index-page [_] (html-response index-html))
 
-(defroutes app-routes
-  (GET "/" [] (index-page))
-  (GET "/greet" [] (greet))
-  (route/not-found "Not Found"))
+(defn greet [_] (html-response greet-html))
+
+(def app-routes
+  (ring/ring-handler
+   (ring/router
+    [["/" {:get index-page}]
+     ["/greet" {:get greet}]])
+   (ring/create-default-handler
+    {:not-found (constantly {:status 404 :headers {} :body "Not Found"})})))
 
 ;; Build middleware stack at namespace load time
 (def app
