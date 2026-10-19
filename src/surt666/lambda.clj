@@ -3,8 +3,7 @@
               [com.amazonaws.services.lambda.runtime.RequestStreamHandler])
   (:require [cognitect.aws.client.api :as aws]
             [paulbutcher.ring-lambda-adapter :refer [handle-request]]
-            [surt666.lambda-app :refer [app]])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
+            [surt666.lambda-app :refer [app]]))
 
 ;; Delay DynamoDB client initialization until after SnapStart restore
 ;; HTTP clients and connection pools should NOT be in the snapshot

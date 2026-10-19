@@ -2,10 +2,11 @@
 
 [sync_state]
 dependency_layer = true
+latest_infra_sync_time = "2025-12-20T21:00:04.550982"
 
 [resource_sync_states."ZipFunctionSyncFlowSkipBuildZipFile:Function"]
-hash = "fbec31f0981c5d78f8c9539d935c5336535c1a7f6b53e3546c957771338fe084"
-sync_time = "2025-12-20T20:49:17.088655"
+hash = "45ecca56ede5f7b30c3744b848d15a6453f1c50722153baea30aa0735d4c5cd5"
+sync_time = "2025-12-20T21:02:31.135987"
 
 [resource_sync_states."AliasVersionSyncFlow:Function:live"]
 hash = "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"

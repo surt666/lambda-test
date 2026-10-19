@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/lambda.zip
+      Handler: surt666.lambda::handleRequest
+      Runtime: java21
+      FunctionUrlConfig:
+        AuthType: NONE
+      Timeout: 20
+      MemorySize: 512
+      Tracing: Active
+      Environment:
+        Variables:
+          JVM_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+    Metadata:
+      SkipBuild: true
+
+Outputs:
+  Endpoint:
+    Value: !GetAtt FunctionUrl.FunctionUrl

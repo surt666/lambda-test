@@ -9,9 +9,6 @@ Resources:
       Runtime: java21
       FunctionUrlConfig:
         AuthType: NONE
-      AutoPublishAlias: live
-      SnapStart:
-        ApplyOn: PublishedVersions
       Timeout: 20
       MemorySize: 512
       Tracing: Active
