@@ -12,7 +12,8 @@ Options:
   --dir <path>   Target directory (default: ./<name>)
   --no-reitit    Don't add reitit
   --no-malli     Don't add malli
-  --lambda       Add an AWS Lambda handler (needs reitit and malli)
+  --lambda       Add an AWS Lambda handler and SAM deploy setup (needs reitit and malli)
+  --region <r>   AWS region for SAM deploys (default: eu-central-1)
   -h, --help     Show this help
 USAGE
 }
@@ -22,12 +23,14 @@ dir=""
 reitit=true
 malli=true
 lambda=false
+region="eu-central-1"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dir) dir="$2"; shift 2 ;;
     --no-reitit) reitit=false; shift ;;
     --no-malli) malli=false; shift ;;
     --lambda) lambda=true; shift ;;
+    --region) region="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
     *) [[ -z "$name" ]] || { echo "Unexpected argument: $1" >&2; exit 1; }
@@ -223,8 +226,80 @@ EDN
 CLJ
 }
 
+add_sam() {
+  echo "Adding SAM templates and deploy scripts..."
+  local jar="target/$lib-0.1.0-SNAPSHOT.jar"
+
+  # Prod publishes versions for SnapStart; dev skips it so sam sync stays fast.
+  for env in prod dev; do
+    local file=template.yaml snapstart="
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions"
+    if [[ $env == dev ]]; then file=template-dev.yaml snapstart=""; fi
+    cat > "$file" <<YAML
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/lambda.zip
+      Handler: $ns.lambda::handleRequest
+      Runtime: java25
+      FunctionUrlConfig:
+        AuthType: NONE$snapstart
+      Timeout: 20
+      MemorySize: 512
+      Tracing: Active
+      Environment:
+        Variables:
+          JVM_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+    Metadata:
+      SkipBuild: true
+
+Outputs:
+  Endpoint:
+    Value: !GetAtt FunctionUrl.FunctionUrl
+YAML
+  done
+
+  cat > samconfig.toml <<TOML
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "$project"
+resolve_s3 = true
+s3_prefix = "$project"
+region = "$region"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+
+[default.sync.parameters]
+region = "$region"
+TOML
+
+  write_deploy() { # <file> <build task> <deploy command>
+    cat > "$1" <<SH
+#!/usr/bin/env bash
+set -euo pipefail
+
+clojure -T:build $2
+# A jar is already a zip; SAM's CodeUri expects the .zip name.
+cp $jar target/lambda.zip
+$3
+SH
+    chmod +x "$1"
+  }
+  write_deploy deploy.sh ci "sam deploy --no-confirm-changeset"
+  write_deploy deploy-fast.sh uber "sam deploy --no-confirm-changeset"
+  write_deploy deploy-dev.sh uber "sam sync --stack-name $project-dev --template template-dev.yaml"
+}
+
 add_deps
-if $lambda; then add_lambda; fi
+if $lambda; then add_lambda; add_sam; fi
 add_clj_kondo
 
 echo "Done: $dir"
