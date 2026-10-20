@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Scaffold a Clojure app with deps-new, clj-kondo, reitit + malli and optional AWS Lambda/SAM setup.
+set -euo pipefail
+
+DEPS_NEW='{:deps {io.github.seancorfield/deps-new {:git/tag "v0.16.0" :git/sha "bac3a23"}}}'
+
+usage() {
+  cat <<USAGE
+Usage: $(basename "$0") <org/name> [options]
+
+Options:
+  --dir <path>   Target directory (default: ./<name>)
+  -h, --help     Show this help
+USAGE
+}
+
+name=""
+dir=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dir) dir="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    -*) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
+    *) [[ -z "$name" ]] || { echo "Unexpected argument: $1" >&2; exit 1; }
+       name="$1"; shift ;;
+  esac
+done
+
+[[ "$name" == */* ]] || { echo "Project name must be <org>/<name>, e.g. surt666/my-app" >&2; usage >&2; exit 1; }
+
+org="${name%%/*}"
+project="${name#*/}"
+dir="$(realpath -m "${dir:-$project}")"
+[[ ! -e "$dir" ]] || { echo "Target already exists: $dir" >&2; exit 1; }
+
+echo "Creating $name in $dir..."
+# Run outside any project so a local deps.edn can't interfere.
+(cd "$(mktemp -d)" && clojure -Sdeps "$DEPS_NEW" -X org.corfield.new/app \
+  :name "$name" :target-dir "\"$dir\"")
+
+echo "Done: $dir"
