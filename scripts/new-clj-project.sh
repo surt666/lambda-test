@@ -38,4 +38,19 @@ echo "Creating $name in $dir..."
 (cd "$(mktemp -d)" && clojure -Sdeps "$DEPS_NEW" -X org.corfield.new/app \
   :name "$name" :target-dir "\"$dir\"")
 
+cd "$dir"
+
+add_clj_kondo() {
+  echo "Setting up clj-kondo..."
+  mkdir -p .clj-kondo
+  cat > .clj-kondo/config.edn <<'KONDO'
+{:linters {:shadowed-var {:level :warning}}}
+KONDO
+  # Import lint configs that libraries ship (e.g. malli, reitit).
+  clj-kondo --lint "$(clojure -Spath -A:test)" --dependencies --copy-configs --skip-lint
+}
+
+command -v clj-kondo >/dev/null || { echo "clj-kondo not found on PATH" >&2; exit 1; }
+add_clj_kondo
+
 echo "Done: $dir"
