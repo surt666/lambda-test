@@ -39,6 +39,8 @@ project="${name#*/}"
 dir="$(realpath -m "${dir:-$project}")"
 [[ ! -e "$dir" ]] || { echo "Target already exists: $dir" >&2; exit 1; }
 
+command -v clj-kondo >/dev/null || { echo "clj-kondo not found on PATH" >&2; exit 1; }
+
 echo "Creating $name in $dir..."
 # Run outside any project so a local deps.edn can't interfere.
 (cd "$(mktemp -d)" && clojure -Sdeps "$DEPS_NEW" -X org.corfield.new/app \
@@ -76,7 +78,6 @@ KONDO
   clj-kondo --lint "$(clojure -Spath -A:test)" --dependencies --copy-configs --skip-lint
 }
 
-command -v clj-kondo >/dev/null || { echo "clj-kondo not found on PATH" >&2; exit 1; }
 add_deps
 add_clj_kondo
 
