@@ -7,7 +7,7 @@ Resources:
     Properties:
       CodeUri: target/lambda.zip
       Handler: surt666.lambda::handleRequest
-      Runtime: java21
+      Runtime: java25
       FunctionUrlConfig:
         AuthType: NONE
       Timeout: 20
