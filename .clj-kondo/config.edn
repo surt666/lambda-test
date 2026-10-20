@@ -1,0 +1,2 @@
+{:linters {:unused-binding {:level :off}
+           :shadowed-var   {:level :warning}}}
